@@ -1,0 +1,6 @@
+Alias;Path
+Load-Credential;Load-Credential.ps1
+Save-Credential;Save-Credential.ps1
+Get-ExternalIp;Get-ExternalIp.ps1
+Enter-PSSessionAzure;Enter-PSSessionAzure.ps1
+New-PsDriveOneDrive;New-PsDriveOneDrive.ps1
