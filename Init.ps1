@@ -1,4 +1,45 @@
-﻿
+﻿function Init () {
+    $path = $PSScriptRoot
+   
+    Write-Progress "Import Scripts"
+
+    $ScriptsToImport = Import-Csv -Path $(Join-Path -Path $path "Scripts.csv") -Delimiter ";"
+
+    foreach ($script in $ScriptsToImport)
+    {
+        $scriptPath = Join-Path -Path $path ("Scripts\{0}" -f $script.Path)
+        if(Test-Path $scriptPath)
+        {
+            Set-Alias -Name $script.Alias -Value $scriptPath
+            # Write-Host "Set-Alias -Name $($script.Alias) -Value $($scriptPath)" -ForegroundColor Cyan
+        }
+        else
+        {
+            Write-Host "Script path $($scriptPath) not found" -ForegroundColor Red
+        }
+    }
+
+    Write-Progress "Import Modules"
+
+    $ModulesToImport = Import-Csv -Path $(Join-Path -Path $path "Modules.csv") -Delimiter ";"
+
+    foreach ($module in $ModulesToImport)
+    {
+        $moduletPath = Join-Path -Path $path ("Modules\{0}" -f $module.Path)
+        if(Test-Path $moduletPath)
+        {
+            Import-Module $moduletPath
+            # Import-Module $moduletPath -Verbose
+        }
+        else
+        {
+            Write-Host "Module path $($moduletPath) not found" -ForegroundColor Red
+        }
+    }
+
+    $ScriptsToImport | Format-Table
+    $ModulesToImport | Format-Table
+}
 
 function Test-ExecutionPolicy()
 {
@@ -11,55 +52,18 @@ function Test-ExecutionPolicy()
     return $true
 }
 
-# Testet ob die ExecutionPolicy auf Unrestricted gesetzt ist, sollte dies nicht der Fall sein.
+# ExecutionPolicy must set to Unrestricted
 if($(Test-ExecutionPolicy) -eq $false)
 {
     $ExecutionPolicy = Get-ExecutionPolicy
-    Write-Host "ExecutionPolicy steht auf ""$ExecutionPolicy"", bitte führen Sie als lokaler Admin ""Set-ExecutionPolicy Unrestricted"" aus."  -ForegroundColor Red
+    Write-Host "ExecutionPolicy is ""$ExecutionPolicy"", you can change this with ""Set-ExecutionPolicy Unrestricted""."  -ForegroundColor Red
     Exit
 }
 
-$path = (split-path -parent $MyInvocation.MyCommand.Definition) + "\"
+Clear-Host
+Write-Host "Run 'Init' to init the powershell repro." -ForegroundColor Yellow
 
-Write-Progress "Import Scripts"
-
-$ScriptsToImport = Import-Csv -Path "$($path)Scripts.csv" -Delimiter ";"
-
-foreach ($script in $ScriptsToImport)
-{
-    $scriptPath = $path + "Scripts\" + $script.Path
-    if(Test-Path $scriptPath)
-    {
-        Set-Alias -Name $script.Alias -Value $scriptPath
-        # Write-Host "Set-Alias -Name $($script.Alias) -Value $($scriptPath)" -ForegroundColor Cyan
-    }
-    else
-    {
-        Write-Host "Script path $($scriptPath) not found" -ForegroundColor Red
-    }
-}
-
-Exit 1
-
-Write-Progress "Import Modules"
-
-$ModulesToImport = Import-Csv -Path "$($path)Modules.csv" -Delimiter ";"
-
-foreach ($module in $ModulesToImport)
-{
-    $moduletPath = $path + "Modules\" + $module.Path
-    if(Test-Path $moduletPath)
-    {
-        Import-Module $moduletPath
-        # Import-Module $moduletPath -Verbose
-    }
-    else
-    {
-        Write-Host "Module path $($moduletPath) not found" -ForegroundColor Red
-    }
-}
-
-
+# Init
 
 # Searching for commands with up/down arrow is really handy.  The
 # option "moves to end" is useful if you want the cursor at the end
